@@ -56,7 +56,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             export KUBECONFIG=$HOME/.kube/config
-            
+
             cd ~/healthletic-devops-assignment
 
             git pull origin main
@@ -70,4 +70,18 @@ jobs:
 
             kubectl rollout status deployment/healthletic -n healthletic
 
-            kubectl get pods -n healthletic
+            kubectl port-forward svc/healthletic 5000:5000 -n healthletic >/dev/null 2>&1 &
+            sleep 5
+
+            HEALTH=$(curl -s http://localhost:5000/health | grep healthy)
+            DB=$(curl -s http://localhost:5000/db-health | grep connected)
+
+            if [ -n "$HEALTH" ] && [ -n "$DB" ]; then
+              echo "Smoke Test Passed"
+            else
+              echo "Smoke Test Failed. Rolling back..."
+              helm rollback healthletic -n healthletic
+              exit 1
+            fi
+
+            echo "Deployment Successful"

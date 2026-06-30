@@ -48,21 +48,24 @@ jobs:
         run: |
           docker push $IMAGE_NAME:$IMAGE_TAG
 
-      - name: Set up Kubernetes Config
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/healthletic-devops-assignment
 
-      - name: Deploy to Kubernetes with Helm
-        run: |
-          helm upgrade --install healthletic ./helm/flask-api \
-            --namespace healthletic \
-            --create-namespace \
-            --set image.repository=${{ env.IMAGE_NAME }} \
-            --set image.tag=${{ env.IMAGE_TAG }} \
-            --wait
+            git pull origin main
 
-      - name: Smoke Test
-        run: |
-          kubectl rollout status deployment/healthletic -n healthletic
-          kubectl get pods -n healthletic
+            helm upgrade --install healthletic ./helm/flask-api \
+              --namespace healthletic \
+              --create-namespace \
+              --set image.repository=${{ env.IMAGE_NAME }} \
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --wait
+
+            kubectl rollout status deployment/healthletic -n healthletic
+
+            kubectl get pods -n healthletic

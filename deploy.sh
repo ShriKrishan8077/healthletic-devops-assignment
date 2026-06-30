@@ -15,6 +15,8 @@ if [ -z "$ENVIRONMENT" ] || [ -z "$VERSION" ] || [ -z "$IMAGE_REGISTRY" ]; then
     exit 1
 fi
 
+export KUBECONFIG=$HOME/.kube/config
+
 helm lint ./helm/flask-api
 
 helm upgrade --install healthletic ./helm/flask-api \
@@ -25,5 +27,24 @@ helm upgrade --install healthletic ./helm/flask-api \
   --wait
 
 kubectl rollout status deployment/healthletic -n healthletic
+
+# Smoke Test
+kubectl port-forward svc/healthletic 5000:5000 -n healthletic >/dev/null 2>&1 &
+PF_PID=$!
+
+sleep 5
+
+HEALTH=$(curl -s http://localhost:5000/health | grep healthy)
+DB=$(curl -s http://localhost:5000/db-health | grep connected)
+
+if [ -n "$HEALTH" ] && [ -n "$DB" ]; then
+    echo "Smoke Test Passed" | tee -a $LOG_FILE
+    kill $PF_PID
+else
+    echo "Smoke Test Failed. Rolling back..." | tee -a $LOG_FILE
+    kill $PF_PID
+    helm rollback healthletic -n healthletic
+    exit 1
+fi
 
 echo "Deployment Successful" | tee -a $LOG_FILE

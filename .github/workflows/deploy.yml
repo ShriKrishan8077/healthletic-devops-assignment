@@ -78,8 +78,10 @@ jobs:
 
             if [ -n "$HEALTH" ] && [ -n "$DB" ]; then
               echo "Smoke Test Passed"
+              kill $PF_PID
             else
               echo "Smoke Test Failed. Rolling back..."
+              kill $PF_PID
               helm rollback healthletic -n healthletic
               exit 1
             fi

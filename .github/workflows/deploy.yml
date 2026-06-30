@@ -58,7 +58,8 @@ jobs:
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
             sudo kubectl get nodes
-            sudo helm upgrade --install healthletic ./helm/flask-api \
+
+            sudo -E helm upgrade --install healthletic ./helm/flask-api \
               --namespace healthletic \
               --create-namespace \
               --set image.repository=${{ env.IMAGE_NAME }} \

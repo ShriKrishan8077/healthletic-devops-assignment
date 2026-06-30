@@ -13,3 +13,7 @@ __pycache__/
 
 # Logs
 *.log
+
+deploy.sh
+
+deploy.ps1

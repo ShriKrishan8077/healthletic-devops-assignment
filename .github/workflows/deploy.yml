@@ -55,13 +55,15 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
             sudo kubectl get nodes
-            helm upgrade --install healthletic ./helm/flask-api \
+            sudo helm upgrade --install healthletic ./helm/flask-api \
               --namespace healthletic \
               --create-namespace \
               --set image.repository=${{ env.IMAGE_NAME }} \
               --set image.tag=${{ env.IMAGE_TAG }} \
-              --wait  
+              --wait
 
       - name: Smoke Test
         run: |

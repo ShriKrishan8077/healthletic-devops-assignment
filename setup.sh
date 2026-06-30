@@ -49,7 +49,7 @@ export KUBECONFIG=$HOME/.kube/config
 grep -qxF 'export KUBECONFIG=$HOME/.kube/config' ~/.bashrc || \
 echo 'export KUBECONFIG=$HOME/.kube/config' >> ~/.bashrc
 
-############################################
+###########################################
 # Helm
 ############################################
 

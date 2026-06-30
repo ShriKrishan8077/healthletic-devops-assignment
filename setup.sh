@@ -67,17 +67,6 @@ fi
 kubectl create namespace healthletic \
 --dry-run=client -o yaml | kubectl apply -f -
 
-############################################
-# Secret
-############################################
-
-kubectl create secret generic healthletic-secret \
---from-literal=DB_USER=root \
---from-literal=DB_PASSWORD=password \
--n healthletic \
---dry-run=client -o yaml | kubectl apply -f -
-
-############################################
 
 echo ""
 echo "=========================================="
@@ -99,3 +88,7 @@ echo ""
 echo "Now run:"
 
 echo "./deploy.sh dev 1.0.1 shrikrishansharma/healthletic-api"
+
+
+export KUBECONFIG=$HOME/.kube/config
+source ~/.bashrc

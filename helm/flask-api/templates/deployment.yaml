@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "flask-api.fullname" . }}
+  labels:
+    app: {{ include "flask-api.name" . }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: {{ include "flask-api.name" . }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ include "flask-api.name" . }}
+
+    spec:
+      containers:
+        - name: flask-api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - containerPort: 5000
+          
+          env:
+            - name: APP_NAME
+              value: {{ .Values.app.name | quote }}
+
+            - name: APP_VERSION
+              value: {{ .Values.app.version | quote }}
+
+            - name: DB_HOST
+              value: {{ .Values.database.host | quote }}
+
+            - name: DB_PORT
+              value: {{ .Values.database.port | quote }}
+
+            - name: DB_NAME
+              value: {{ .Values.database.name | quote }}
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flask-api.fullname" . }}-secret
+                  key: DB_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flask-api.fullname" . }}-secret
+                  key: DB_PASSWORD
+          
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5

@@ -1,0 +1,28 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# VS Code
+.vscode/
+
+# Environment files
+.env
+
+# Docker
+docker-compose.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,46 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: healthletic-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: healthletic
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    networks:
+      - healthletic-network
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    
+  flask-api:
+    build: .
+    container_name: healthletic-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - healthletic-network
+
+volumes:
+  mysql_data:
+
+networks:
+  healthletic-network:
+    driver: bridge

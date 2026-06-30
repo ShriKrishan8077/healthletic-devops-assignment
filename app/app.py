@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from app.config import Config
+from app.db import get_db_connection
 
 app = Flask(__name__)
 
@@ -24,6 +25,28 @@ def version():
     return jsonify({
         "version": Config.APP_VERSION
     })
+
+@app.route("/db-health")
+def db_health():
+    try:
+        connection = get_db_connection()
+
+        cursor = connection.cursor()
+        cursor.execute("SELECT 1")
+        cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "database": "connected"
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "database": "failed",
+            "error": str(e)
+        }), 500
 
 
 if __name__ == "__main__":
